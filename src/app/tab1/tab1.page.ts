@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { BluetoothService } from '../services/bluetooth.service';
+import { BluetoothSerial } from '@awesome-cordova-plugins/bluetooth-serial/ngx';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab1',
@@ -7,67 +8,116 @@ import { BluetoothService } from '../services/bluetooth.service';
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page implements OnInit {
-  devices: any[] = [];
+  Devices: any[] = [];
   selectedDevice: any = null;
   isScanning: boolean = false; // Variable para manejar el estado de escaneo
 
-  constructor(private bluetoothService: BluetoothService) {}
+  constructor(
+    private bluetoothSerial: BluetoothSerial,
+    private alertCtrl: AlertController
+  ) {}
 
   ngOnInit() {
-    this.scanForDevices();
+    console.log('ngOnInit');
+    // this.enableBluetooth();
   }
 
-  // Función para escanear dispositivos Bluetooth cuando se presiona el botón
-  scanForDevices() {
-    this.isScanning = true; // Cambia el estado de escaneo a true
-    this.bluetoothService.scanDevices().then(
-      (devices) => {
-        this.devices = devices;
-        this.isScanning = false; // Cambia el estado de escaneo a false cuando termina
+  //*Activar el bluetooth
+  async enableBluetooth() {
+    return this.bluetoothSerial.isEnabled().then((response) => {
+      if (response) {
+        // this.isEnableBluetooth('BLE is enabled');
+        console.log('BLE is enabled');
+        return this.listDevices();
+      } else {
+        this.isEnableBluetooth('BLE is disabled');
+        // return this.bluetoothSerial.enable();
+        return Promise.resolve();
+      }
+    });
+  }
+
+  //* Listar dispositivos
+  async listDevices() {
+    this.bluetoothSerial.list().then(
+      (response) => {
+        console.log(response);
+        this.Devices = response;
       },
-      (err) => {
-        this.isScanning = false; // Cambia el estado de escaneo a false si hay un error
-        this.bluetoothService.showAlert(
-          'Error',
-          'No se pudo escanear dispositivos'
-        );
+      (error) => {
+        console.log(error);
       }
     );
   }
 
-  connect(device: { address: string; name: any }) {
-    this.bluetoothService.connectToDevice(device.address).subscribe(
-      () => {
-        this.selectedDevice = device;
-        this.bluetoothService.showAlert(
-          'Conectado',
-          `Conectado a ${device.name}`
-        );
+  //*isEnableBluetooth
+  async isEnableBluetooth(msg: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'alerta',
+      message: msg,
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => {
+            console.log('OK');
+          },
+        },
+      ],
+    });
+  }
+
+  //* Conectar dispositivo
+  async connect(address: string) {
+    this.bluetoothSerial.connect(address).subscribe(
+      (response) => {
+        console.log(response);
+        this.deviceConnected();
       },
-      (err) => {
-        this.bluetoothService.showAlert(
-          'Error',
-          'No se pudo conectar al dispositivo'
-        );
+      (error) => {
+        console.log(error);
       }
     );
   }
 
-  sendInvoiceData() {
-    const invoiceData = 'Factura: Detalles de la factura...';
-    this.bluetoothService.sendData(invoiceData).then(
-      () => {
-        this.bluetoothService.showAlert(
-          'Enviado',
-          'Factura enviada correctamente'
-        );
+  deviceConnected() {
+    this.bluetoothSerial.subscribe('\n').subscribe(
+      (success) => {
+        console.log(success);
+        this.hundler(success);
       },
-      (err) => {
-        this.bluetoothService.showAlert(
-          'Error',
-          'No se pudo enviar la factura'
-        );
+      (error) => {
+        console.log(error);
+        this.hundler(error);
       }
     );
+  }
+
+  //* enviar datos
+
+  sendData(data: string) {
+    this.bluetoothSerial.write(data).then(
+      (response) => {
+        console.log(response);
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }
+
+  //* disconectar dispositivo
+  disconnect() {
+    this.bluetoothSerial.disconnect().then(
+      (response) => {
+        console.log(response);
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }
+
+  hundler(value: any) {
+    console.log(value);
   }
 }

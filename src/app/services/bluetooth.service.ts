@@ -6,32 +6,65 @@ import { AlertController } from '@ionic/angular';
   providedIn: 'root',
 })
 export class BluetoothService {
+  Devices: any[] = [];
   constructor(
     private bluetoothSerial: BluetoothSerial,
     private alertCtrl: AlertController
   ) {}
 
-  // Escanear dispositivos Bluetooth
-  scanDevices() {
-    return this.bluetoothSerial.list(); // Devuelve una lista de dispositivos emparejados
-  }
-  // Conectar a un dispositivo
-  connectToDevice(address: string) {
-    return this.bluetoothSerial.connect(address);
-  }
-
-  // Enviar datos al dispositivo Bluetooth
-  sendData(data: string) {
-    return this.bluetoothSerial.write(data);
-  }
-
-  // Mostrar alertas al usuario
-  async showAlert(header: string, message: string) {
-    const alert = await this.alertCtrl.create({
-      header,
-      message,
-      buttons: ['OK'],
+  //*Activar el bluetooth
+  async enableBluetooth() {
+    return this.bluetoothSerial.isEnabled().then((response) => {
+      if (response) {
+        // this.isEnableBluetooth('BLE is enabled');
+        console.log('BLE is enabled');
+        return this.listDevices();
+      } else {
+        this.isEnableBluetooth('BLE is disabled');
+        // return this.bluetoothSerial.enable();
+        return Promise.resolve();
+      }
     });
-    await alert.present();
+  }
+
+  //* Listar dispositivos
+  async listDevices() {
+    this.bluetoothSerial.list().then(
+      (response) => {
+        console.log(response);
+        this.Devices = response;
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }
+
+  //*isEnableBluetooth
+  async isEnableBluetooth(msg: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'alerta',
+      message: msg,
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => {
+            console.log('OK');
+          },
+        },
+      ],
+    });
+  }
+
+  //* Conectar dispositivo
+  async connectDevice(address: string) {
+    this.bluetoothSerial.connect(address).subscribe(
+      (response) => {
+        console.log(response);
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   }
 }
