@@ -1,46 +1,73 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title> Configutation Bluetooth Conected </ion-title>
+  <ion-toolbar color="info" style="background-color: #5ccedf">
+    <!-- Color personalizado para el encabezado -->
+    <ion-title style="font-weight: bold; text-align: center; color: white">
+      BLE Configuration
+    </ion-title>
+
+    <!-- Botón de escanear personalizado -->
+    <ion-button
+      (click)="scanDevices()"
+      slot="end"
+      [disabled]="isConnecting || isScanning"
+      style="margin-right: 15px; border-radius: 20px; background-color: #4caf50"
+    >
+      <ion-icon
+        slot="icon-only"
+        name="bluetooth"
+        style="color: white"
+      ></ion-icon>
+      <ion-label slot="end" style="margin-right: 10px; color: white"
+        >Scan</ion-label
+      >
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Configutation Bluetooth Conected</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" style="padding: 15px">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Available Devices</ion-card-title>
+    </ion-card-header>
 
-  <!--  -->
-  <div class="container">
-    <div class="row">
-      <div class="col">
-        <button (click)="enableBluetooth()" slot="end">
-          <ion-icon slot="icon-only" name="bluetooth"></ion-icon>
-          Buscar
-        </button>
-        <div *ngFor="let data of Devices">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>{{ data.name }}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p>{{ data.id }}</p>
-              <p>{{ data.name }}</p>
-              <p>{{ data.rssi }}</p>
-              <p>{{ data.class }}</p>
-              <p>{{ data.adress }}</p>
-              <p>{{ data.adressType }}</p>
+    <ion-card-content>
+      <ion-item lines="none" style="margin-bottom: 10px">
+        <ion-label>
+          <strong>Selected Device: </strong>
+          {{ selectedDevice?.name || 'No device selected' }}
+        </ion-label>
+      </ion-item>
 
-              <ion-button (click)="connect(data.adress)">Connect</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-      </div>
-    </div>
-  </div>
+      <!-- Spinner mientras se escanean los dispositivos -->
+      <ion-spinner *ngIf="isScanning"></ion-spinner>
 
-  <!-- <app-explore-container
-    name="Configutation Bluetooth Conected"
-  ></app-explore-container> -->
+      <!-- Lista de dispositivos -->
+      <ion-list style="border-radius: 10px; border: 1px solid #ccc">
+        <ion-item
+          *ngFor="let device of devices"
+          (click)="connect(device)"
+          [disabled]="isConnecting"
+          style="margin-bottom: 5px; border-bottom: 1px solid #ddd"
+        >
+          {{ device.name || 'Unknown Device' }} ({{ device.address }})
+        </ion-item>
+      </ion-list>
+
+      <ion-item *ngIf="isConnected">
+        <ion-label color="success">
+          Connected to: {{ selectedDevice?.name || 'Unknown Device' }}
+        </ion-label>
+      </ion-item>
+
+      <!-- Botón de Imprimir Factura -->
+      <ion-button
+        expand="block"
+        *ngIf="isConnected"
+        (click)="printInvoice()"
+        style="margin-top: 20px; border-radius: 20px"
+      >
+        Imprimir Factura
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

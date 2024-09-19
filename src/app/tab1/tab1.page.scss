@@ -1,0 +1,35 @@
+/* tab1.page.scss */
+
+ion-toolbar {
+    background-color: #4CAF50;
+  }
+  
+  ion-title {
+    font-weight: bold;
+    color: white;
+    text-align: center;
+  }
+  
+  ion-button {
+    border-radius: 20px;
+  }
+  
+  ion-list {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  ion-item {
+    margin-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  ion-card-title {
+    font-size: 1.2em;
+    color: #333;
+  }
+  
+  ion-button[expand="block"] {
+    margin-top: 20px;
+  }
+  
